@@ -41,10 +41,22 @@ const explosionImg = new Image();
 explosionImg.onload = () => explosionReady = true;
 explosionImg.src = 'esplosione.png';
 
+// Rilevamento mobile e orientamento
+let isMobile = window.innerWidth <= 768;
+let isPortrait = window.innerHeight > window.innerWidth;
+
+// Scale factor per mobile
+function getScaleFactor() {
+    if (!isMobile) return 1;
+    return isPortrait ? 0.6 : 0.85;
+}
+
 // Logica di Gioco
 let gameState = 'START';
 let score = 0;
-let player = { x: 100, y: 300, w: 160, h: 50, speed: 2, health: 100, lastFire: 0, rotation: 0 };
+let scaleFactor = getScaleFactor();
+
+let player = { x: 100, y: 300, w: 160 * scaleFactor, h: 50 * scaleFactor, speed: 3.5, health: 100, lastFire: 0, rotation: 0 };
 let enemies = [];
 let bullets = [];
 let enemyBullets = [];
@@ -60,9 +72,21 @@ let explosion = null; // { x, y, startTime }
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    isMobile = window.innerWidth <= 768;
+    isPortrait = window.innerHeight > window.innerWidth;
+    scaleFactor = getScaleFactor();
+    
+    // Aggiorna dimensioni giocatore in base allo scaling
+    player.w = 160 * scaleFactor;
+    player.h = 50 * scaleFactor;
+    player.speed = isMobile ? 4 : 2;
+    
     if (gameState === 'START') player.y = canvas.height / 2;
 }
 window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => {
+    setTimeout(resize, 100);
+});
 resize();
 
 // Nascondi UI layer durante la schermata iniziale
@@ -186,8 +210,9 @@ function update() {
     // seaOffsetY rimane 0 per mantenere il mare statico in verticale
 
     const now = Date.now();
-    if ((keys['Space'] || keys['Enter']) && now - player.lastFire > 300) {
-        bullets.push({ x: player.x + player.w - 10, y: player.y + player.h/2, vx: canvas.width / 200 });
+    const fireRate = isMobile ? 200 : 300; // Più veloce su mobile
+    if ((keys['Space'] || keys['Enter']) && now - player.lastFire > fireRate) {
+        bullets.push({ x: player.x + player.w - 10, y: player.y + player.h/2, vx: canvas.width / 180 });
         player.lastFire = now;
     }
 
@@ -199,10 +224,16 @@ function update() {
     // Nemici (Neri)
     if (Math.random() < 0.006) {
         const newEnemyY = 60 + Math.random() * (canvas.height - 120);
+        const enemyW = 160 * scaleFactor;
+        const enemyH = 50 * scaleFactor;
+        const enemySpeed = (4 + (score/3750)) * (isMobile ? 1.3 : 1);
+        
         const newEnemy = {
             x: canvas.width + 150,
             y: newEnemyY,
-            w: 160, h: 50, speed: 4 + (score/3750),
+            w: enemyW, 
+            h: enemyH, 
+            speed: enemySpeed,
             lastFire: 0
         };
 
@@ -221,8 +252,9 @@ function update() {
         
         // Nemici sparano orizzontalmente se sono davanti al giocatore
         const enemyNow = Date.now();
-        if (enemyNow - e.lastFire > 800 && e.x > player.x) {
-            enemyBullets.push({ x: e.x, y: e.y + e.h / 2, vx: -(canvas.width / 250), vy: 0 });
+        const enemyFireRate = isMobile ? 600 : 800; // Nemici sparano più veloce su mobile
+        if (enemyNow - e.lastFire > enemyFireRate && e.x > player.x) {
+            enemyBullets.push({ x: e.x, y: e.y + e.h / 2, vx: -(canvas.width / 230), vy: 0 });
             e.lastFire = enemyNow;
         }
         
@@ -302,10 +334,11 @@ function draw() {
 
     const drawCloud = (c) => {
         if (cloudReady) {
-            ctx.drawImage(cloudImg, c.x, c.y, 300 * c.s, 120 * c.s);
+            const cloudScale = scaleFactor * 0.8; // Nuvole più piccole su mobile
+            ctx.drawImage(cloudImg, c.x, c.y, 300 * cloudScale, 120 * cloudScale);
         } else {
             ctx.fillStyle = 'rgba(255,255,255,0.2)';
-            ctx.beginPath(); ctx.arc(c.x, c.y, 60 * c.s, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(c.x, c.y, 60 * scaleFactor * 0.8, 0, Math.PI*2); ctx.fill();
         }
     };
 
@@ -316,25 +349,29 @@ function draw() {
         // Proiettili Giocatore (Missili)
         bullets.forEach(b => {
             if (missileReady) {
-                ctx.drawImage(missileImg, b.x, b.y, 80, 20);
+                const missileW = 80 * scaleFactor;
+                const missileH = 20 * scaleFactor;
+                ctx.drawImage(missileImg, b.x, b.y, missileW, missileH);
             } else {
                 ctx.fillStyle = '#f87171';
-                ctx.fillRect(b.x, b.y, 80, 20);
+                ctx.fillRect(b.x, b.y, 80 * scaleFactor, 20 * scaleFactor);
             }
         });
         
         // Proiettili Nemici
         enemyBullets.forEach(b => {
             if (missileReady) {
+                const missileW = 80 * scaleFactor;
+                const missileH = 20 * scaleFactor;
                 ctx.save();
-                ctx.translate(b.x + 40, b.y + 10);
+                ctx.translate(b.x + missileW/2, b.y + missileH/2);
                 const angle = Math.atan2(b.vy, b.vx);
                 ctx.rotate(angle);
-                ctx.drawImage(missileImg, -40, -10, 80, 20);
+                ctx.drawImage(missileImg, -missileW/2, -missileH/2, missileW, missileH);
                 ctx.restore();
             } else {
                 ctx.fillStyle = '#fbbf24';
-                ctx.fillRect(b.x, b.y, 80, 20);
+                ctx.fillRect(b.x, b.y, 80 * scaleFactor, 20 * scaleFactor);
             }
         });
 
