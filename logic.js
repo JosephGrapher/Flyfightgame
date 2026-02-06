@@ -212,7 +212,8 @@ function update() {
     const now = Date.now();
     const fireRate = isMobile ? 200 : 300; // Più veloce su mobile
     if ((keys['Space'] || keys['Enter']) && now - player.lastFire > fireRate) {
-        bullets.push({ x: player.x + player.w - 10, y: player.y + player.h/2, vx: canvas.width / 180 });
+        const bulletSpeed = isMobile ? canvas.width / 100 : canvas.width / 140;
+        bullets.push({ x: player.x + player.w - 10, y: player.y + player.h/2, vx: bulletSpeed });
         player.lastFire = now;
     }
 
@@ -254,7 +255,8 @@ function update() {
         const enemyNow = Date.now();
         const enemyFireRate = isMobile ? 600 : 800; // Nemici sparano più veloce su mobile
         if (enemyNow - e.lastFire > enemyFireRate && e.x > player.x) {
-            enemyBullets.push({ x: e.x, y: e.y + e.h / 2, vx: -(canvas.width / 230), vy: 0 });
+            const enemyBulletSpeed = isMobile ? -(canvas.width / 150) : -(canvas.width / 230);
+            enemyBullets.push({ x: e.x, y: e.y + e.h / 2, vx: enemyBulletSpeed, vy: 0 });
             e.lastFire = enemyNow;
         }
         
