@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sky Combat - Inizia il Volo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Schermata Iniziale -->
+    <div id="start-screen" class="screen">
+        <h1 class="text-4xl font-black italic mb-2 tracking-widest uppercase text-center text-blue-400">SKY COMBAT</h1>
+        <p class="text-white/60 mb-10 font-bold uppercase tracking-tighter text-center">Missione di Intercettazione</p>
+        
+        <div class="mb-8 flex flex-col items-center">
+            <!-- Container per l'immagine o il fallback grafico -->
+            <div id="preview-container" class="w-64 h-32 flex items-center justify-center floating">
+                <img id="main-preview-img" src="aereo giocatore.png" class="max-w-full max-h-full pixelated drop-shadow-2xl" alt="Aereo Giocatore" onerror="this.style.display='none'; document.getElementById('fallback-preview').classList.remove('hidden')">
+                <div id="fallback-preview" class="hidden w-40 h-10 bg-white rounded-full relative">
+                    <div class="absolute -bottom-2 left-4 w-16 h-4 bg-gray-300 rounded-full"></div>
+                </div>
+            </div>
+        </div>
+
+        <button id="start-btn" class="btn-start">INIZIA IL VOLO</button>
+    </div>
+
+    <!-- Schermata Game Over -->
+    <div id="game-over-screen" class="screen hidden">
+        <h1 class="text-5xl font-black italic mb-4 tracking-widest uppercase text-center text-red-500">Game Over</h1>
+        <p class="text-white/60 mb-8 font-bold uppercase tracking-tighter text-center">Aereo Abbattuto</p>
+        
+        <div class="mb-12 flex flex-col items-center">
+            <div class="text-4xl font-black text-yellow-400 mb-2">PUNTEGGIO FINALE</div>
+            <div id="final-score" class="text-5xl font-black text-yellow-300">0</div>
+        </div>
+
+        <button id="restart-btn" class="btn-start">RIPROVA</button>
+    </div>
+
+    <!-- UI Gioco -->
+    <div id="ui-layer">
+        <div class="flex justify-between items-start">
+            <div class="bg-black/70 p-4 border-l-4 border-yellow-500">
+                <div class="text-[10px] uppercase opacity-60 font-bold">SCORE</div>
+                <div class="text-3xl font-black text-yellow-400 leading-none" id="score">0</div>
+            </div>
+            <div class="text-right flex flex-col items-end">
+                <div class="text-[10px] uppercase font-bold mb-1">INTEGRITÀ SCAFO</div>
+                <div class="w-48 h-6 bg-gray-900 border-2 border-white/20 p-0.5">
+                    <div id="health-bar" class="h-full bg-gradient-to-r from-red-600 to-green-500 transition-all" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-end p-8 md:hidden pointer-events-none">
+            <div id="joystick-zone">
+                <div id="joystick-knob"></div>
+            </div>
+            <div id="fire-btn" class="w-24 h-24 bg-red-600/80 rounded-full border-4 border-white/30 flex items-center justify-center font-black italic pointer-events-auto active:scale-90 select-none shadow-xl">FUOCO</div>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script src="logic.js" type="module"></script>
+</body>
+</html>
