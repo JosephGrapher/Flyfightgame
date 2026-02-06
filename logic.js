@@ -255,7 +255,7 @@ function update() {
         const enemyNow = Date.now();
         const enemyFireRate = isMobile ? 600 : 800; // Nemici sparano più veloce su mobile
         if (enemyNow - e.lastFire > enemyFireRate && e.x > player.x) {
-            const enemyBulletSpeed = isMobile ? -(canvas.width / 75) : -(canvas.width / 120);
+            const enemyBulletSpeed = isMobile ? -(canvas.width / 150) : -(canvas.width / 200);
             enemyBullets.push({ x: e.x, y: e.y + e.h / 2, vx: enemyBulletSpeed, vy: 0 });
             e.lastFire = enemyNow;
         }
@@ -301,6 +301,12 @@ function update() {
             enemyBullets.splice(bi, 1);
             player.health -= 10;
             healthBar.style.width = player.health + "%";
+            
+            // Game over quando la salute arriva a 0 o meno
+            if (player.health <= 0) {
+                explosion = { x: player.x + player.w / 2, y: player.y + player.h / 2, startTime: Date.now() };
+                gameState = 'EXPLOSION';
+            }
         }
     });
 
